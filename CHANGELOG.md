@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+### 0.2.0 (04-03-2013)
+______________________
+
+ + Added seek method;
+ + Added shift method;
+ + Core refactoring
+ + Megamask::unset deprecated;
+ + Megamask::indexOfLastFilled deprecated.
+
 ### 0.1.0 (02-03-2013)
 ______________________
 

@@ -1,14 +1,14 @@
 /**
  * jquery.megamask - plugin that creates masks for ur inputs.
  *
- * Version: 0.1.0
+ * Version: 0.2.0
  *
  * Copyright 2013, Sergey Kamardin.
  *
  * Licensed under the MIT license.
  * http://www.opensource.org/licenses/mit-license.php
  *
- * Date: 2.03.2013
+ * Date: 4.03.2013
  * Location: Moscow, Russia.
  * Contact: gobwas@gmail.com
  */
@@ -84,7 +84,7 @@
 		 */
 		initialize: function(element, mask, options)
 		{
-			options = options || {};
+			options || (options = {});
 
 			$.extend(this.options, options, true);
 
@@ -225,9 +225,19 @@
 				}
 			}
 
+			var editableLength = end - start;
+
+			for (var x = start; x < end; x++) {
+				if (!this.value.hasOwnProperty(x)) {
+					editableLength--;
+				}
+			}
+
 			return {
-				start: start,
-				end:   end
+				start:          start,
+				end:            end,
+				length:         end-start,
+				editableLength: editableLength
 			};
 		},
 
@@ -242,7 +252,7 @@
 				this.el.setSelectionRange(key, key);
 			} else if (this.el.createTextRange) {
 				var range = this.el.createTextRange();
-				range.move('character', key);
+				range.shift('character', key);
 				range.select();
 			}
 		},
@@ -256,7 +266,7 @@
 		 */
 		indexOfWritable: function(key, direction)
 		{
-			direction = direction || 1;
+			direction || (direction = 1);
 
 			while (key >= 0 && key < this.length) {
 				if (this.value.hasOwnProperty(key)) {
@@ -269,10 +279,39 @@
 		},
 
 		/**
+		 * Seeks index to given delta in the given direction.
+		 *
+		 * @param key
+		 * @param delta
+		 * @param direction
+		 * @return {*}
+		 */
+		seek: function (key, delta, direction)
+		{
+			delta     || (delta = 1);
+			direction || (direction = 1);
+
+			while (key >= 0 && key <= this.length) {
+
+				key+= direction;
+
+				if (this.value.hasOwnProperty(key)) {
+					delta--;
+
+					if (delta == 0) {
+						return key;
+					}
+				}
+			}
+
+			return false;
+		},
+
+		/**
 		 * Returns index of the last filled symbol.
-         *
+		 *
 		 * @deprecated
-         *
+		 *
 		 * @return {Number}
 		 */
 		indexOfLastFilled: function()
@@ -296,6 +335,8 @@
 		/**
 		 * Unsets value of the symbol having given index.
 		 *
+		 * @deprecated
+		 *
 		 * @param {number} key
 		 */
 		unset: function(key)
@@ -304,9 +345,8 @@
 
 			if (this.indexOfWritable(key, -1) === false) return;
 
-			for (var x = 0; x < this.length; x++) {
-				if (this.value.hasOwnProperty(x) && x >= key) {
-
+			for (var x = key; x < this.length; x++) {
+				if (this.value.hasOwnProperty(x)) {
 					next = this.indexOfWritable(x + 1);
 
 					if (next !== false) {
@@ -326,7 +366,59 @@
 		 */
 		set: function(key, value)
 		{
-			this.value[key] = value;
+			if (this.value.hasOwnProperty(key)) {
+				this.value[key] = value;
+			}
+		},
+
+		/**
+		 * Inserts value in index, shifts other symbols to the right.
+		 *
+		 * @param key
+		 * @param value
+		 */
+		insert: function(key, value)
+		{
+			this.shift(key, 1, 1);
+			this.set(key, value);
+		},
+
+		/**
+		 * Shifts elements of this.value from the given key on the given length in the given direction.
+		 *
+		 * @param key
+		 * @param length
+		 * @param direction
+		 */
+		shift: function(key, length, direction)
+		{
+			var temp = this.value.slice(0),
+				next;
+
+			length    || (length = 1);
+			direction || (direction = 1);
+
+			for (var x in this.value) {
+				if (this.value.hasOwnProperty(x) && x >= key) {
+					x = parseInt(x);
+					next = this.seek(x, length, direction);
+
+					if (temp.hasOwnProperty(next)) if (next !== false) {
+						temp[next] = this.value[x];
+					}
+				}
+			}
+
+			if (direction < 0) {
+				for (var z = this.length; z >= 0 && length > 0; z--) {
+					if (temp.hasOwnProperty(z)) {
+						length--;
+						temp[z] = null;
+					}
+				}
+			}
+
+			this.value = temp;
 		},
 
 		/**
@@ -356,15 +448,16 @@
 					position = this.resolvePosition();
 
 				if (event.which == 8) {
-					key  = this.indexOfWritable(position.end - 1, -1);
-					next = this.indexOfWritable(key, -1);
+					next = position.editableLength == 0 ? this.indexOfWritable(position.start - 1, -1) : this.indexOfWritable(position.start, -1);
+					key = position.end;
 				} else {
-					key = this.indexOfWritable(position.start);
-					next = this.indexOfWritable(key);
+					next = this.indexOfWritable(position.start);
+					key = position.editableLength == 0 ? position.end + 1 : position.end;
 				}
 
-				if (key !== false) {
-					this.unset(key);
+				if (next !== false) {
+					this.shift(key, position.editableLength, -1);
+
 					this.flush();
 
 					if (next !== false) {
@@ -394,12 +487,18 @@
 
 			if (key !== false) {
 				if (this.test(key, symbol)) {
-					this.set(key, symbol);
+
+					if (position.editableLength > 0) {
+						this.shift(position.end, position.editableLength, -1);
+					}
+
+					this.insert(key, symbol);
+
 					this.flush();
 
 					next = this.indexOfWritable(key+1);
 
-					if (next) {
+					if (next !== false) {
 						this.setPosition(next);
 					}
 				}
@@ -432,7 +531,7 @@
 		{
 			if (this.isEmpty()) {
 				this.flush();
-                this.setPosition(this.indexOfWritable(0));
+				this.setPosition(this.indexOfWritable(0));
 			}
 		},
 
@@ -459,7 +558,7 @@
 	 */
 	$.fn.megamask = function(mask, options)
 	{
-		options = options || {};
+		options || (options = {});
 
 		this.data('mask', new Megamask(this, mask, options));
 	}
