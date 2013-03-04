@@ -113,7 +113,7 @@
 		},
 
 		/**
-		 * Clears value of the input.
+		 * Clears value of the input (but not of mask);
 		 */
 		clear: function()
 		{
@@ -262,13 +262,13 @@
 		 *
 		 * @param {number} key
 		 * @param {number} [direction=1]
-		 * @return {*}
+		 * @return {number|boolean}
 		 */
 		indexOfWritable: function(key, direction)
 		{
 			direction || (direction = 1);
 
-			while (key >= 0 && key < this.length) {
+			while (key >= 0 && key <= this.length) {
 				if (this.value.hasOwnProperty(key)) {
 					return key;
 				}
@@ -281,10 +281,11 @@
 		/**
 		 * Seeks index to given delta in the given direction.
 		 *
-		 * @param key
-		 * @param delta
-		 * @param direction
-		 * @return {*}
+		 * @param {number} key
+		 * @param {number} [delta=1]
+		 * @param {number} [direction=1]
+         *
+		 * @return {number|boolean}
 		 */
 		seek: function (key, delta, direction)
 		{
@@ -374,8 +375,8 @@
 		/**
 		 * Inserts value in index, shifts other symbols to the right.
 		 *
-		 * @param key
-		 * @param value
+		 * @param {number} key
+		 * @param {string} value
 		 */
 		insert: function(key, value)
 		{
@@ -386,14 +387,13 @@
 		/**
 		 * Shifts elements of this.value from the given key on the given length in the given direction.
 		 *
-		 * @param key
-		 * @param length
-		 * @param direction
+		 * @param {number} key
+		 * @param {number} [length=1]
+		 * @param {number} [direction=1]
 		 */
 		shift: function(key, length, direction)
 		{
-			var temp = this.value.slice(0),
-				next;
+			var temp = this.value.slice(0);
 
 			length    || (length = 1);
 			direction || (direction = 1);
@@ -401,22 +401,21 @@
 			for (var x in this.value) {
 				if (this.value.hasOwnProperty(x) && x >= key) {
 					x = parseInt(x);
-					next = this.seek(x, length, direction);
 
-					if (temp.hasOwnProperty(next)) if (next !== false) {
-						temp[next] = this.value[x];
-					}
+					var next = this.seek(x, length, direction);
+
+					(next !== false) && (temp[next] = this.value[x]);
 				}
 			}
 
-			if (direction < 0) {
-				for (var z = this.length; z >= 0 && length > 0; z--) {
-					if (temp.hasOwnProperty(z)) {
-						length--;
-						temp[z] = null;
-					}
-				}
-			}
+            if (direction < 0) {
+                var last = this.value.lastIndexOf(this.value.slice(-1)[0]);
+
+                for (var z = length; z > 0; z--) {
+                    temp[last] = null;
+                    last = this.seek(last, 1, -1);
+                }
+            }
 
 			this.value = temp;
 		},
