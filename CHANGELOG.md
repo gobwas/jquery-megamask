@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### 0.2.2 (xx.xx.2013)
+
+ + Added functionality of masking existing value;
+ + n/a.
+
 ### 0.2.1 (05.03.2013)
 
  + Refactoring of shift function.

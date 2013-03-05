@@ -1,7 +1,7 @@
 /**
  * jquery.megamask - plugin that creates masks for ur inputs.
  *
- * Version: 0.2.1
+ * Version: 0.2.2-dev
  *
  * Copyright 2013, Sergey Kamardin.
  *
@@ -64,6 +64,11 @@
 	$.extend(Megamask.prototype, {
 
 		/**
+		 * Version.
+		 */
+		VERSION : '0.2.2-dev',
+
+		/**
 		 * Events for bind on.
 		 */
 		events: {
@@ -91,7 +96,7 @@
 			this.$el = element;
 			this.el  = element.get(0);
 
-			this.resolveMask(mask);
+			this.resolveMask(mask, this.$el.val());
 		},
 
 		/**
@@ -158,22 +163,29 @@
 		 * Parses given mask into the groups of symbols.
 		 *
 		 * @param {string} mask
-		 *
-		 * @return {*}
+		 * @param {string} value
+		 * @return {Megamask}
 		 */
-		resolveMask: function(mask)
+		resolveMask: function(mask, value)
 		{
+			value || (value = '');
+
 			this.length = mask.length;
 
-			for (var x = 0; x < mask.length; x++) {
+			for (var x = 0, y = 0; x < mask.length; x++) {
 				var symbol = mask.charAt(x);
 
 				if (this.options.regexMap.hasOwnProperty(symbol)) {
-					this.value[x] = null;
+					this.value[x] = value.charAt(y) || null;
 					this.rules[x] = new RegExp(this.options.regexMap[symbol]);
+					y++;
 				} else {
 					this.masked[x] = symbol;
 				}
+			}
+
+			if (!this.isEmpty()) {
+				this.flush();
 			}
 
 			return this;
