@@ -1,7 +1,7 @@
 /**
  * jquery.megamask - plugin that creates masks for ur inputs.
  *
- * Version: 0.2.0
+ * Version: 0.2.1
  *
  * Copyright 2013, Sergey Kamardin.
  *
