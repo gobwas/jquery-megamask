@@ -4,7 +4,8 @@ CHANGELOG
 ### 0.2.2 (xx.xx.2013)
 
  + Added functionality of masking existing value;
- + n/a.
+ + Moved $.data('mask') initialization into initialization method - this change allows using Megamask without jQuery.fn - jusn via new Megamask(element, mask, options);
+ + n/a
 
 ### 0.2.1 (05.03.2013)
 

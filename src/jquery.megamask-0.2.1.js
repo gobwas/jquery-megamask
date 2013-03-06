@@ -97,6 +97,8 @@
 			this.el  = element.get(0);
 
 			this.resolveMask(mask, this.$el.val());
+
+			this.$el.data('mask', this);
 		},
 
 		/**
@@ -571,7 +573,7 @@
 	{
 		options || (options = {});
 
-		this.data('mask', new Megamask(this, mask, options));
+		new Megamask(this, mask, options);
 	}
 
 }).call(window, jQuery);
