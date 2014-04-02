@@ -1,0 +1,32 @@
+{
+  "name": "jquery-megamask",
+  "version": "0.3.0",
+  "description": "jQuery plugin for masking inputs",
+  "main": "src/jquery.megamask.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gobwas/jQuery-Megamask.git"
+  },
+  "keywords": [
+    "jquery",
+    "mask",
+    "megamask",
+    "input",
+    "masked"
+  ],
+  "author": "Sergey Kamardin <gobwas@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gobwas/jQuery-Megamask/issues"
+  },
+  "homepage": "https://github.com/gobwas/jQuery-Megamask",
+  "dependencies": {
+    "jquery": "*"
+  }
+}
