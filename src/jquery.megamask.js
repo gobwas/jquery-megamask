@@ -18,6 +18,10 @@
 
     "use strict";
 
+    function isFunction(obj) {
+        return Object.prototype.toString.call(obj) === "[object Function]";
+    }
+
     /**
      * Mega constructor.
      *
@@ -72,37 +76,37 @@
          * Initialization.
          * Called after instantiating Megamask.
          *
-         * @param {Element} element
+         * @param {Element} $element
          * @param {string}  mask
          * @param {object}  [options={}]
          */
-        initialize: function(element, mask, options)
+        initialize: function($element, mask, options)
         {
             options || (options = {});
 
             $.extend(this.options, options, true);
 
-            this.$el = element;
-            this.el  = element.get(0);
+            this.$el = $element;
+            this.el  = $element.get(0);
 
-            this.resolveMask(mask, this.$el.val());
+            this.mask = mask;
 
-            if (this.$el.data('mask')) {
-                this.$el.data('mask').remove();
-                this.$el.removeData('mask');
-            }
-
-            this.$el.data('mask', this);
+            this.refresh();
 
             for (var e in this.events) {
                 if (this.events.hasOwnProperty(e)) {
-                    element.on(e + Megamask.EVENT_NAMESPACE, $.proxy(this[this.events[e]], this));
+                    $element.on(e + Megamask.EVENT_NAMESPACE, $.proxy(this[this.events[e]], this));
                 }
             }
         },
 
         remove: function() {
             this.$el.off(Megamask.EVENT_NAMESPACE);
+        },
+
+        refresh: function() {
+            this.resolveMask(this.mask, this.$el.val());
+            this.setPosition(this.indexOfLastFilled());
         },
 
         /**
@@ -571,14 +575,31 @@
     /**
      * Extending jQuery functions list.
      *
-     * @param {string} mask
+     * @param {string} definition
      * @param {object} [options={}]
      */
-    $.fn.megamask = function(mask, options)
+    $.fn.megamask = function(definition, options)
     {
+        var result, $context;
+
+        $context = $(this);
+
         options || (options = {});
 
-        new Megamask(this, mask, options);
+        result = $context.map(function() {
+            var $el, mask, method;
+
+            $el = $(this);
+
+            if (!(mask = $el.data('mask'))) {
+                $el.data('mask', (mask = new Megamask($el, definition, options)));
+                return $el;
+            } else if (isFunction((method = mask[definition]))) {
+                return method.call(mask, options);
+            }
+        });
+
+        return $context.length > 1 ? result : result[0];
     };
 
 

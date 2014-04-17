@@ -1,6 +1,6 @@
 {
   "name": "jquery-megamask",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "jQuery plugin for masking inputs",
   "main": "src/jquery.megamask.js",
   "directories": {
