@@ -57,11 +57,6 @@
     $.extend(Megamask.prototype, {
 
         /**
-         * Version.
-         */
-        VERSION : '0.2.2-dev',
-
-        /**
          * Events for bind on.
          */
         events: {
@@ -105,8 +100,13 @@
         },
 
         refresh: function() {
+            var lastFilled;
+
             this.resolveMask(this.mask, this.$el.val());
-            this.setPosition(this.indexOfLastFilled());
+
+            if (typeof (lastFilled = this.indexOfLastFilled()) === "number") {
+                this.setPosition(lastFilled);
+            }
         },
 
         /**
@@ -343,13 +343,14 @@
             var key = 0;
 
             while (key < this.length) {
-                key = this.indexOfWritable(key);
-                if (key !== false) {
+                if (key = this.indexOfWritable(key)) {
                     if (this.get(key) != undefined) {
                         key++;
                     } else {
                         return key;
                     }
+                } else {
+                    return null;
                 }
             }
 

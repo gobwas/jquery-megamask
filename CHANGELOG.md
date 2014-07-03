@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### 0.3.2 (03.07.2014)
+______________________
+
++ Bugfix. When calling with a non editable definition for mask (without pattern symbols) - inifity loop produced.
+
 ### 0.3.1 (17.04.2014)
 ______________________
 
