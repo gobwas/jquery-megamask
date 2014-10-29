@@ -64,7 +64,8 @@
             'keypress': 'keypress',
             'blur'    : 'blur',
             'focus'   : 'focus',
-            'click'   : 'focus'
+            'click'   : 'focus',
+            'paste'   : 'paste'
         },
 
         /**
@@ -456,6 +457,38 @@
         },
 
         /**
+         *  Sets characted at given position and moves caret
+         */
+        setCharAt: function(char, position) {
+            var next, key;
+
+            key = this.indexOfWritable(position.start);
+
+            if (key !== false) {
+                if (this.test(key, char)) {
+
+                    if (position.editableLength > 0) {
+                        this.shift(position.end, position.editableLength, -1);
+                    }
+
+                    this.insert(key, char);
+
+                    this.flush();
+
+                    next = this.indexOfWritable(key+1);
+
+                    if (next !== false) {
+                        this.setPosition(next);
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        },
+
+        /**
          * Event handler.
          *
          * @event
@@ -501,33 +534,8 @@
          */
         keypress: function(event)
         {
-            var symbol   = String.fromCharCode(event.which),
-                position = this.resolvePosition(),
-                next,
-                key;
-
-            key = this.indexOfWritable(position.start);
-
-            if (key !== false) {
-                if (this.test(key, symbol)) {
-
-                    if (position.editableLength > 0) {
-                        this.shift(position.end, position.editableLength, -1);
-                    }
-
-                    this.insert(key, symbol);
-
-                    this.flush();
-
-                    next = this.indexOfWritable(key+1);
-
-                    if (next !== false) {
-                        this.setPosition(next);
-                    }
-                }
-            }
-
             event.preventDefault();
+            this.setCharAt(String.fromCharCode(event.which), this.resolvePosition())
         },
 
         /**
@@ -569,6 +577,33 @@
         {
             if (this.isEmpty()) {
                 this.clear();
+            }
+        },
+
+        /**
+         * Event handler.
+         *
+         * @event
+         *
+         * @param {Event} event
+         */
+        paste: function(event)
+        {
+            var self = this,
+                i, text;
+
+            event.preventDefault();
+
+            try {
+                text = event.originalEvent.clipboardData.getData("Text");
+            } catch (err) {
+                return;
+            }
+            
+            for (i = 0, text = text.split(''); i < text.length; i++) {
+                if (!self.setCharAt(text[i], self.resolvePosition())) {
+                    break;
+                }
             }
         }
     });
